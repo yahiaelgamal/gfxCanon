@@ -49,13 +49,17 @@ void drawWheels(void){
             glTranslated(0.0, 0.0, 2.0);
         }
         gluDisk(qobj, 0, 1.0, 20, 4);
+
+        glTranslated(0,0,-2.0);
+        gluDisk(qobj, 0, 1.0, 20, 4);
+        glTranslated(0,0,2.0);
         glColor3f(0.8, 0.2, 0.5);
         glutSolidCone(0.3, 5, 20, 10);
         glPopMatrix();
         glPopMatrix(); // end one wheel
         
     }
-    glPopMatrix(); // end wheels
+    glPopMatrix(); // end wheelss
 }
 void drawAxis(void){
     glPushMatrix();
@@ -162,6 +166,10 @@ void drawAxis(void){
     qobj2 = gluNewQuadric();
     gluQuadricDrawStyle(qobj2,GLU_FILL);
     gluCylinder(qobj2, 0.80, 0.6, 3.0, 20,8);
+    
+    glPushMatrix(); // start sphere
+    gluSphere(qobj2, 0.8, 20, 10);
+    glPopMatrix(); // end sphere
     glPopMatrix(); //end body
     
     glPopMatrix(); // end holder
@@ -189,7 +197,7 @@ int main(int argc, char **argv)
     glLightfv(GL_LIGHT0, GL_AMBIENT, light_diffuse);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glEnable(GL_LIGHT0);
-    glEnable(GL_LIGHTING);
+//    glEnable(GL_LIGHTING);
     
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
@@ -239,10 +247,12 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
             break;
             
         case 's':
-            rotholder += 1.0;
+            if (rotholder < 45)
+                rotholder += 1.0;
             break;
         case 'S':
-            rotholder -= 1.0;
+            if (rotholder > -45)
+                rotholder -= 1.0;
             break;
             
         case 'r':
