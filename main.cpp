@@ -40,9 +40,9 @@ struct Kazifa{
         x = 0.0;
         y = 5.5;
         z = canonfor-1;
-        anglx = 40;
+        anglx = 0;
         angly = rotbody;
-        anglz = 40;
+        anglz = 0;
     }
     void draw(){
         glPushMatrix(); // start sphere
@@ -50,7 +50,7 @@ struct Kazifa{
         GLUquadricObj * qobj;
         qobj = gluNewQuadric();
         gluQuadricDrawStyle(qobj,GLU_FILL);
-        gluSphere(qobj, 0.8, 20, 10);
+        gluSphere(qobj, 0.6, 20, 10);
         glPopMatrix(); // end sphere
     }
     void update(){
@@ -65,8 +65,8 @@ struct Kazifa{
 
         y -=1*sin(PI*angly/180);
         angly+=resist;
-        
-        z -=1;
+
+        z -=1*cos(PI*rotbody/180);;
     }
 }kazifa;
 
@@ -232,14 +232,10 @@ void displayWire(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glPushMatrix(); // everything
     
-    
     drawCanon();
     kazifa.draw();
     
     glPopMatrix(); // end everything
-    
-    
-    //    drawAxis();
     glutSwapBuffers();
 }
 //<<<<<<<<<<<<<<<<<<<<<< main >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -247,7 +243,9 @@ int main(int argc, char **argv)
 {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH );
+    
     glutInitWindowSize(1024,786);
+    
     glutInitWindowPosition(100, 100);
     glutCreateWindow("Transformation testbed - wireframes");
     glutDisplayFunc(displayWire);
@@ -255,11 +253,12 @@ int main(int argc, char **argv)
     GLfloat light_diffuse[] = {0.8, 0.8, 0.8};
     float light_position[] = {10.0, 10.5, 10.5, 0.0};
     float light_position2[] = {-10.0, 10.5, -10.5, 0.0};
+    
     float light_position3[] = {0.0, -10.5, -10.5, 0.0};
+    
     glLightfv(GL_LIGHT0, GL_AMBIENT_AND_DIFFUSE, light_diffuse);
     glLightfv(GL_LIGHT1, GL_SPECULAR, light_diffuse);
     glLightfv(GL_LIGHT2, GL_AMBIENT, light_diffuse);
-    
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glLightfv(GL_LIGHT1, GL_POSITION, light_position2);
     glLightfv(GL_LIGHT2, GL_POSITION, light_position3);
@@ -267,7 +266,7 @@ int main(int argc, char **argv)
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHT1);
     glEnable(GL_LIGHT2);
-    //    glEnable(GL_LIGHTING);
+//    glEnable(GL_LIGHTING);
     
     glEnable(GL_DEPTH_TEST);
     //    glDepthMask(GL_TRUE);
@@ -368,6 +367,8 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
             break;
         
     }
+    if (init_kazifa)
+        kazifa.init();
     glutPostRedisplay();
     
 }
