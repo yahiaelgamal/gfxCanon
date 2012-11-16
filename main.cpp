@@ -75,13 +75,13 @@ void displayWire(void)
 {
     glMatrixMode(GL_PROJECTION); // set the view volume shape
     glLoadIdentity();
-    //    gluPerspective(50.0, //Field of view
-    //                   1.0, //Aspect ratio
-    //                   0.1, // Z near
-    //                   100.0);// Z far
+   gluPerspective(50.0, //Field of view
+                       1.0, //Aspect ratio
+                       0.1, // Z near
+                       100.0);// Z far
     
-    double factor = 2;
-    glOrtho(-10/factor, 10/factor, -10/factor, 10/factor, 0.1, 100);
+    double factor = 1;
+    glOrtho(-10/factor, 10/factor, -10/factor, 10/factor, 0.0001, 100);
     glMatrixMode(GL_MODELVIEW); // position and aim the camera
     glEnable(GL_DEPTH_TEST);
     glLoadIdentity();
@@ -121,10 +121,10 @@ void displayWire(void)
     gluQuadricDrawStyle(qobj,GLU_FILL);
     gluCylinder(qobj, 2.0, 2.0, 0.5, 20,10);
     //
-    //    glPushMatrix();
-    //    gluDisk(qobj, 0, 2.0, 20, 4);
-    //    glColor3f(0.8, 0.2, 0.5);
-    //    glPopMatrix();
+     glPushMatrix();
+      gluDisk(qobj, 0, 2.0, 20, 4);
+       glColor3f(0.8, 0.2, 0.5);
+       glPopMatrix();
     
     glPopMatrix(); // end holder
     
@@ -140,20 +140,20 @@ void displayWire(void)
 int main(int argc, char **argv)
 {
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB );
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_STENCIL );
     glutInitWindowSize(640,480);
     glutInitWindowPosition(100, 100);
     glutCreateWindow("Transformation testbed - wireframes");
     glutDisplayFunc(displayWire);
-    //    GLfloat light_diffuse[] = {0.4, 0.0, 0.0};
-    //    float light_position[] = {10.0, 10.5, 10.5, 0.0};
-    //    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-    //    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-    //    glEnable(GL_LIGHT0);
-    //    glEnable(GL_LIGHTING);
     
-    //    glEnable(GL_DEPTH_TEST);
-//    glEnable( GL_CULL_FACE );
+    GLfloat light_diffuse[] = {0.4, 0.0, 0.0};
+    float light_position[] = {10.0, 10.5, 10.5, 0.0};
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    glEnable(GL_LIGHT0);
+//    glEnable(GL_LIGHTING);
+    
+    glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
     glDepthFunc(GL_LEQUAL);
     glDepthRange(0.0f, 1.0f);
