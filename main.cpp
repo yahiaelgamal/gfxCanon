@@ -63,10 +63,10 @@ struct Kazifa{
     }
     void undo_update(){
 
-        y -=1*sin(PI*angly/180);
-        angly+=resist;
-
         z -=1*cos(PI*rotbody/180);;
+        angly+=resist;
+        y -=1*sin(PI*angly/180);
+
     }
 }kazifa;
 
@@ -284,6 +284,7 @@ int main(int argc, char **argv)
 void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
     int init_kazifa = 0;
     switch(thekey){
+        // camera
         case 'x':
             camera_x += 5;
             camera_x= (int)camera_x %360;
@@ -311,6 +312,7 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
             camera_z= (int)camera_z %360;
             break;
             
+        // play/rewind
         case 'p':
             kazifa.update();
             break;
@@ -318,6 +320,8 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
             kazifa.undo_update();
             break;
             
+            
+        // control
         case 'r':
             if (rotbody < 90)
                 rotbody += 1;
@@ -352,6 +356,7 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
             break;
             
             
+        // power
         case '+':
             kazifa.resist -= 0.5;
             printf("kazifa.resist %f\n", kazifa.resist);
@@ -360,7 +365,7 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
             kazifa.resist += 0.5;
             printf("kazifa.resist %f\n", kazifa.resist);
             break;
-            
+        // init
         case 'I':
             kazifa.init();
             printf("kazifa.angly %f\n", kazifa.angly);
