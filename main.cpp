@@ -186,7 +186,7 @@ void drawAxis(void){
 int main(int argc, char **argv)
 {
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH | GLUT_STENCIL );
+    glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH );
     glutInitWindowSize(640,480);
     glutInitWindowPosition(100, 100);
     glutCreateWindow("Transformation testbed - wireframes");
@@ -194,15 +194,25 @@ int main(int argc, char **argv)
     
     GLfloat light_diffuse[] = {0.8, 0.8, 0.8};
     float light_position[] = {10.0, 10.5, 10.5, 0.0};
+    float light_position2[] = {-10.0, 10.5, -10.5, 0.0};
+    float light_position3[] = {0.0, -10.5, -10.5, 0.0};
     glLightfv(GL_LIGHT0, GL_AMBIENT, light_diffuse);
+    glLightfv(GL_LIGHT1, GL_AMBIENT, light_diffuse);
+    glLightfv(GL_LIGHT2, GL_AMBIENT, light_diffuse);
+    
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    glLightfv(GL_LIGHT1, GL_POSITION, light_position2);
+    glLightfv(GL_LIGHT2, GL_POSITION, light_position3);
+    
     glEnable(GL_LIGHT0);
+    glEnable(GL_LIGHT1);
+//    glEnable(GL_LIGHT2);
 //    glEnable(GL_LIGHTING);
     
     glEnable(GL_DEPTH_TEST);
-    glDepthMask(GL_TRUE);
-    glDepthFunc(GL_LEQUAL);
-    glDepthRange(0.0f, 1.0f);
+//    glDepthMask(GL_TRUE);
+//    glDepthFunc(GL_LEQUAL);
+//    glDepthRange(0.0f, 1.0f);
     
     glutKeyboardFunc(myKeyboard);
     glClearColor(1.0f, 1.0f, 1.0f,0.0f); // background is white
