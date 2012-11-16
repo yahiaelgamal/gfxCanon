@@ -1,27 +1,77 @@
 #include "GLUT/glut.h"
 #include <iostream.h>
-float x = 0.0;
-float y = 0.0;
-float z = 0.0;
+#include <math.h>
 
-float tz = 0.0;
+#define PI 3.14159265
+
+float camera_x = 0.0;
+float camera_y = -90.0;
+float camera_z = 0.0;
+
+float tx = 0.0;
+float ty = 0.0;
+float tz = 12.0;
 float s = 1.0;
 
-float rotcanon=0.0f;
+float rotbody=0.0f;
 float rotholder=0.0f;
+float canonfor = 4.0f;
+
+struct Kazifa{
+    float x;
+    float y;
+    float z;
+
+    float anglx;
+    float angly;
+    float anglz;
+     
+    float resist = 5/1;
+    void init(float xx, float yy, float zz,
+              float ax, float ay, float az){
+        x = xx;
+        y = yy;
+        z = zz;
+        anglx = ax;
+        angly = ay;
+        anglz = az;
+    }
+    void init(){
+        x = 0.0;
+        y = 5.5;
+        z = canonfor-1;
+        anglx = 40;
+        angly = rotbody;
+        anglz = 40;
+    }
+    void draw(){
+        glPushMatrix(); // start sphere
+        glTranslated(x, y, z);
+        GLUquadricObj * qobj;
+        qobj = gluNewQuadric();
+        gluQuadricDrawStyle(qobj,GLU_FILL);
+        gluSphere(qobj, 0.8, 20, 10);
+        glPopMatrix(); // end sphere
+    }
+    void update(){
+        cout << "rotbody " << angly << "  sin " << sin(angly) << endl;
+        
+        y +=1*sin(PI*angly/180);
+        angly-=resist;
+        
+        z +=1*cos(PI*rotbody/180);;
+    }
+    void undo_update(){
+
+        y -=1*sin(PI*angly/180);
+        angly+=resist;
+        
+        z -=1;
+    }
+}kazifa;
+
 void myKeyboard(unsigned char thekey,int mouseX,int mouseY);
-//<<<<<<<<<<<<<<<<<<< axis >>>>>>>>>>>>>>
-void axis(double length)
-{ // draw a z-axis, with cone at end
-    glPushMatrix();
-    glBegin(GL_LINES);
-    glVertex3d(0, 0, 0);
-    glVertex3d(0,0,length); // along the z-axis
-    glEnd();
-    glTranslated(0, 0,length -0.2);
-    glutWireCone(0.04, 0.2, 12, 9);
-    glPopMatrix();
-}
+
 //<<<<<<<<<<<<<<<<<<<<<<<<<<<<< displayWire >>>>>>>>>>>>>>>>>>>>>>
 void drawWheels(void){
     
@@ -49,7 +99,7 @@ void drawWheels(void){
             glTranslated(0.0, 0.0, 2.0);
         }
         gluDisk(qobj, 0, 1.0, 20, 4);
-
+        
         glTranslated(0,0,-2.0);
         gluDisk(qobj, 0, 1.0, 20, 4);
         glTranslated(0,0,2.0);
@@ -61,54 +111,14 @@ void drawWheels(void){
     }
     glPopMatrix(); // end wheelss
 }
-void drawAxis(void){
-    glPushMatrix();
-    glColor3d(1,0,0); // draw black lines
-    axis(5); // x-axis
-    
-    glColor3d(1,1,0); // draw black lines
-    glPushMatrix();
-    glRotated(90, 0,1.0, 0);
-    axis(5); // y-axis
-    
-    glColor3d(0,1,0); // draw black lines
-    glRotated(-90.0, 1, 0, 0);
-    axis(5); // z-axis
-    glPopMatrix();
-    glPopMatrix();
-    
-} void displayWire(void)
-{
-    glMatrixMode(GL_PROJECTION); // set the view volume shape
-    glLoadIdentity();
-   gluPerspective(100.0, //Field of view
-                       640/480.0, //Aspect ratio
-                       0.9, // Z near
-                       100.0);// Z far
-    
-    double factor = 1;
-    glOrtho(-10/factor, 10/factor, -10/factor, 10/factor, 0.1, 500);
-    glMatrixMode(GL_MODELVIEW); // position and aim the camera
-    glEnable(GL_DEPTH_TEST);
-    glLoadIdentity();
-    gluLookAt(0.0, 0.0, 2.0, // eye position
-              0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-    
-    
-    glRotatef(x, 1.0, 0.0, .0);
-    glRotatef(y, 0.0, 1.0, .0);
-    glRotatef(z, 0.0, 0.0, 1.0);
-    
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glPushMatrix(); // everything
-    
-    
+
+void drawCanon(void){
     glColor3f(0.5, 0.5, 0.0);
     glPushMatrix(); // wire cube start
     glutWireCube(15);
     
     glPushMatrix(); //canon
-    glTranslated(0, -2, 0);
+    glTranslated(0, 0, canonfor );
     glScalef(1.5, 1.5, 1.5);
     
     glPushMatrix(); //base
@@ -159,8 +169,9 @@ void drawAxis(void){
     glPopMatrix(); // end 5azoo2_2
     
     glPushMatrix(); // start body
+    
     glTranslated(0, 2.0, -0.5);
-    glRotatef(rotcanon, -1.0, 0.0, 0.0);
+    glRotatef(rotbody, -1.0, 0.0, 0.0);
     glColor3f(0.0, 1, 0.0);
     GLUquadricObj * qobj2;
     qobj2 = gluNewQuadric();
@@ -170,12 +181,61 @@ void drawAxis(void){
     glPushMatrix(); // start sphere
     gluSphere(qobj2, 0.8, 20, 10);
     glPopMatrix(); // end sphere
+    
+    glPushMatrix();
+    glColor3f(0.0,0.0,1);
+    //    glTranslated(0, 1.0 ,0); // torus at (0,1,0)
+    //    glRotated(90.0, 1,0,0);
+    glutSolidTorus(0.1, 0.8, 20,10);
+    glPopMatrix();
+    
+    glTranslated(0.0, 0.0, 3.0);
+    glColor3f(1.0,0,0);
+    GLUquadricObj * qobj3;
+    qobj3 = gluNewQuadric();
+    gluQuadricDrawStyle(qobj3,GLU_FILL);
+    gluCylinder(qobj3, 0.60, 0.8, 0.75, 20,8);
+    
+    
     glPopMatrix(); //end body
     
     glPopMatrix(); // end holder
     
     glPopMatrix(); // end canon
     glPopMatrix(); // end small cube
+    
+}
+
+void displayWire(void)
+{
+    glMatrixMode(GL_PROJECTION); // set the view volume shape
+    glLoadIdentity();
+    gluPerspective(170.0, //Field of view
+                   640/480.0, //Aspect ratio
+                   0.1, // Z near
+                   100.0);// Z far
+    
+    double factor = 1;
+    glOrtho(-10/factor, 10/factor, -10/factor, 10/factor, 0.1, 500);
+    glMatrixMode(GL_MODELVIEW); // position and aim the camera
+    glEnable(GL_DEPTH_TEST);
+    glLoadIdentity();
+    gluLookAt(tx, ty, tz, // eye position
+              0.0, 0.0, 0.0, // center
+              0.0, 1.0, 0.0); // normal
+    
+    
+    glRotatef(camera_x, 1.0, 0.0, .0);
+    glRotatef(camera_y, 0.0, 1.0, .0);
+    glRotatef(camera_z, 0.0, 0.0, 1.0);
+    
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glPushMatrix(); // everything
+    
+    
+    drawCanon();
+    kazifa.draw();
+    
     glPopMatrix(); // end everything
     
     
@@ -187,7 +247,7 @@ int main(int argc, char **argv)
 {
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH );
-    glutInitWindowSize(640,480);
+    glutInitWindowSize(1024,786);
     glutInitWindowPosition(100, 100);
     glutCreateWindow("Transformation testbed - wireframes");
     glutDisplayFunc(displayWire);
@@ -196,8 +256,8 @@ int main(int argc, char **argv)
     float light_position[] = {10.0, 10.5, 10.5, 0.0};
     float light_position2[] = {-10.0, 10.5, -10.5, 0.0};
     float light_position3[] = {0.0, -10.5, -10.5, 0.0};
-    glLightfv(GL_LIGHT0, GL_AMBIENT, light_diffuse);
-    glLightfv(GL_LIGHT1, GL_AMBIENT, light_diffuse);
+    glLightfv(GL_LIGHT0, GL_AMBIENT_AND_DIFFUSE, light_diffuse);
+    glLightfv(GL_LIGHT1, GL_SPECULAR, light_diffuse);
     glLightfv(GL_LIGHT2, GL_AMBIENT, light_diffuse);
     
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
@@ -206,74 +266,107 @@ int main(int argc, char **argv)
     
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHT1);
-//    glEnable(GL_LIGHT2);
-//    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT2);
+    //    glEnable(GL_LIGHTING);
     
     glEnable(GL_DEPTH_TEST);
-//    glDepthMask(GL_TRUE);
-//    glDepthFunc(GL_LEQUAL);
-//    glDepthRange(0.0f, 1.0f);
+    //    glDepthMask(GL_TRUE);
+    //    glDepthFunc(GL_LEQUAL);
+    //    glDepthRange(0.0f, 1.0f);
     
     glutKeyboardFunc(myKeyboard);
     glClearColor(1.0f, 1.0f, 1.0f,0.0f); // background is white
-    glViewport(0, 0, 640, 480);
+    glViewport(0, 0, 1024, 786);
+    
+    kazifa.init();
     glutMainLoop();
 }
 
 void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
+    int init_kazifa = 0;
     switch(thekey){
         case 'x':
-            x += 5;
-            x= (int)x %360;
-            std::cout << x << std::endl;
+            camera_x += 5;
+            camera_x= (int)camera_x %360;
+            std::cout << camera_x << std::endl;
             break;
         case 'y':
-            y += 5;
-            y= (int)y %360;
+            camera_y += 5;
+            camera_y= (int)camera_y %360;
             break;
         case 'z':
-            z += 5;
-            z= (int)z %360;
+            camera_z += 5;
+            camera_z= (int)camera_z %360;
             break;
             
         case 'X':
-            x -= 5;
-            x= (int)x %360;
+            camera_x -= 5;
+            camera_x= (int)camera_x %360;
             break;
         case 'Y':
-            y -= 5;
-            y= (int)y %360;
+            camera_y -= 5;
+            camera_y= (int)camera_y %360;
             break;
         case 'Z':
-            z -= 5;
-            z= (int)z %360;
+            camera_z -= 5;
+            camera_z= (int)camera_z %360;
             break;
             
-        case 'n':
-            tz -= 0.1;
+        case 'p':
+            kazifa.update();
             break;
-        case 'N':
-            tz += 0.1;
-            break;
-            
-        case 's':
-            if (rotholder < 45)
-                rotholder += 1.0;
-            break;
-        case 'S':
-            if (rotholder > -45)
-                rotholder -= 1.0;
+        case 'P':
+            kazifa.undo_update();
             break;
             
         case 'r':
-            if (rotcanon < 60)
-                rotcanon += 1;
+            if (rotbody < 90)
+                rotbody += 1;
+            init_kazifa =1;
             break;
             
         case 'R':
-            if (rotcanon > 0)
-                rotcanon -= 1;
+            if (rotbody > 0)
+                rotbody -= 1;
+            init_kazifa =1;
             break;
+            
+        case 'e':
+            if (rotholder < 45)
+                rotholder += 1;
+            init_kazifa =1;
+            break;
+            
+        case 'E':
+            if (rotholder > 0)
+                rotholder -= 1;
+            init_kazifa =1;
+            break;
+            
+        case 'f':
+            canonfor += 1;
+            init_kazifa =1;
+            break;
+        case 'F':
+            canonfor -= 1;
+            init_kazifa =1;
+            break;
+            
+            
+        case '+':
+            kazifa.resist -= 0.5;
+            printf("kazifa.resist %f\n", kazifa.resist);
+            break;
+        case '-':
+            kazifa.resist += 0.5;
+            printf("kazifa.resist %f\n", kazifa.resist);
+            break;
+            
+        case 'I':
+            kazifa.init();
+            printf("kazifa.angly %f\n", kazifa.angly);
+            break;
+        
     }
     glutPostRedisplay();
     
