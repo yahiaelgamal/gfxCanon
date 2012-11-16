@@ -6,6 +6,9 @@ float z = 0.0;
 
 float tz = 0.0;
 float s = 1.0;
+
+float rotcanon=0.0f;
+float rotholder=0.0f;
 void myKeyboard(unsigned char thekey,int mouseX,int mouseY);
 //<<<<<<<<<<<<<<<<<<< axis >>>>>>>>>>>>>>
 void axis(double length)
@@ -31,7 +34,7 @@ void drawWheels(void){
     for (int i = 0; i < 4; i++){
         glPushMatrix(); // start one wheel
         glColor3f(0.0, 0.0, 0.5);
-        glTranslated(dx[i]*2.6, 0, dz[i]*1.5); // cylinder at (0,0,1)
+        glTranslated(dx[i]*2.7, 0, dz[i]*1.5); // cylinder at (0,0,1)
         glRotatef(90.0, 0.0, 1.0, 0.0);
         glScalef(0.5, 0.5, 0.25);
         GLUquadricObj * qobj;
@@ -70,18 +73,17 @@ void drawAxis(void){
     glPopMatrix();
     glPopMatrix();
     
-}
-void displayWire(void)
+} void displayWire(void)
 {
     glMatrixMode(GL_PROJECTION); // set the view volume shape
     glLoadIdentity();
-   gluPerspective(50.0, //Field of view
-                       1.0, //Aspect ratio
-                       0.1, // Z near
+   gluPerspective(100.0, //Field of view
+                       640/480.0, //Aspect ratio
+                       0.9, // Z near
                        100.0);// Z far
     
     double factor = 1;
-    glOrtho(-10/factor, 10/factor, -10/factor, 10/factor, 0.0001, 100);
+    glOrtho(-10/factor, 10/factor, -10/factor, 10/factor, 0.1, 500);
     glMatrixMode(GL_MODELVIEW); // position and aim the camera
     glEnable(GL_DEPTH_TEST);
     glLoadIdentity();
@@ -99,9 +101,11 @@ void displayWire(void)
     
     glColor3f(0.5, 0.5, 0.0);
     glPushMatrix(); // wire cube start
-    glutWireCube(5);
+    glutWireCube(15);
     
     glPushMatrix(); //canon
+    glTranslated(0, -2, 0);
+    glScalef(1.5, 1.5, 1.5);
     
     glPushMatrix(); //base
     glScalef(1, 0.5, 1);
@@ -113,18 +117,52 @@ void displayWire(void)
     
     
     drawWheels();
+    
     glPushMatrix(); // start holder
+    
     glTranslated(0, 1.75, -0.0);
     glRotatef(90.0, 1.0, 0.0, 0.0);
+    glRotatef(rotholder, 0.0, 0.0, 1.0);
+    
     GLUquadricObj * qobj;
     qobj = gluNewQuadric();
     gluQuadricDrawStyle(qobj,GLU_FILL);
     gluCylinder(qobj, 2.0, 2.0, 0.5, 20,10);
-    //
-     glPushMatrix();
-      gluDisk(qobj, 0, 2.0, 20, 4);
-       glColor3f(0.8, 0.2, 0.5);
-       glPopMatrix();
+    
+    glPushMatrix(); // start disk
+    gluDisk(qobj, 0, 2.0, 20, 4);
+    glColor3f(0.8, 0.2, 0.5);
+    glPopMatrix(); // end disk
+    
+    glRotatef(-90.0, 1.0, 0.0, 0.0);
+    
+    glPushMatrix(); // start 5azoo2_1
+    glColor3f(1,1,0);
+    glTranslated(-1.0, 1.5, 0);
+    glScalef(0.2, 1, 0.3);
+    glutSolidCube(3);
+    
+    glPopMatrix(); // end 5azoo2_1
+    
+    
+    glPushMatrix(); // start 5azoo2_2
+    
+    glColor3f(1,1,0);
+    glTranslated(1.0, 1.5, 0);
+    glScalef(0.2, 1, 0.3);
+    glutSolidCube(3);
+    
+    glPopMatrix(); // end 5azoo2_2
+    
+    glPushMatrix(); // start body
+    glTranslated(0, 2.0, -0.5);
+    glRotatef(rotcanon, -1.0, 0.0, 0.0);
+    glColor3f(0.0, 1, 0.0);
+    GLUquadricObj * qobj2;
+    qobj2 = gluNewQuadric();
+    gluQuadricDrawStyle(qobj2,GLU_FILL);
+    gluCylinder(qobj2, 0.80, 0.6, 3.0, 20,8);
+    glPopMatrix(); //end body
     
     glPopMatrix(); // end holder
     
@@ -146,12 +184,12 @@ int main(int argc, char **argv)
     glutCreateWindow("Transformation testbed - wireframes");
     glutDisplayFunc(displayWire);
     
-    GLfloat light_diffuse[] = {0.4, 0.0, 0.0};
+    GLfloat light_diffuse[] = {0.8, 0.8, 0.8};
     float light_position[] = {10.0, 10.5, 10.5, 0.0};
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_diffuse);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     glEnable(GL_LIGHT0);
-//    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
     
     glEnable(GL_DEPTH_TEST);
     glDepthMask(GL_TRUE);
@@ -201,10 +239,20 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
             break;
             
         case 's':
-            s -= 0.1;
+            rotholder += 1.0;
             break;
         case 'S':
-            s += 0.1;
+            rotholder -= 1.0;
+            break;
+            
+        case 'r':
+            if (rotcanon < 60)
+                rotcanon += 1;
+            break;
+            
+        case 'R':
+            if (rotcanon > 0)
+                rotcanon -= 1;
             break;
     }
     glutPostRedisplay();
