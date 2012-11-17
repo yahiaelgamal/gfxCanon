@@ -11,7 +11,7 @@ float camera_z = 0.0;
 float tx = 0.0;
 float ty = 0.0;
 float tz = 12.0;
-float s = 1.0;
+float s = 170.0;
 
 float rotbody=0.0f;
 float rotholder=0.0f;
@@ -68,7 +68,50 @@ struct Kazifa{
         y -=1*sin(PI*angly/180);
 
     }
+    void print(){
+        printf("x:%f, y:%f, z:%f\n", x,y,z);
+    }
 }kazifa;
+
+
+struct Hole{
+    float x,y,z,r;
+    
+    void init(float mx, float my, float mz, float rad){
+        x = mx;
+        y = my;
+        z = mz;
+        r = rad;
+    }
+    
+    void draw(){
+        GLUquadricObj * qobj;
+        qobj = gluNewQuadric();
+        gluQuadricDrawStyle(qobj,GLU_FILL);
+        
+        glPushMatrix(); // start disk
+        glTranslated(x,y, z);
+        glColor3f(0, 0, 0);
+        gluDisk(qobj, r-0.75, r, 20, 4);
+        glPopMatrix(); // end disk
+    }
+    
+    bool isIn(Kazifa kaz){
+        if (kaz.x < x + r && kaz.x > x - r &&
+            kaz.y < y + r && kaz.y > y - r &&
+            kaz.z < z + 1 && kaz.z > z - 1)
+            return true;
+        else
+            return false;
+    }
+    
+    void print(){
+        printf("x:%f, y:%f, z:%f, r:%f\n", x,y,z,r);
+    }
+};
+
+Hole h1, h2, h3, h4, h5;
+Hole holes[5] = {h1,h2,h3,h4,h5};
 
 void myKeyboard(unsigned char thekey,int mouseX,int mouseY);
 
@@ -210,7 +253,7 @@ void displayWire(void)
 {
     glMatrixMode(GL_PROJECTION); // set the view volume shape
     glLoadIdentity();
-    gluPerspective(170.0, //Field of view
+    gluPerspective(s, //Field of view
                    640/480.0, //Aspect ratio
                    0.1, // Z near
                    100.0);// Z far
@@ -235,6 +278,11 @@ void displayWire(void)
     drawCanon();
     kazifa.draw();
     
+    h1.init(0,5,15,2);
+    h1.draw();
+    kazifa.print();
+    printf("%d\n", h1.isIn(kazifa));
+    
     glPopMatrix(); // end everything
     glutSwapBuffers();
 }
@@ -244,7 +292,7 @@ int main(int argc, char **argv)
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_SINGLE | GLUT_RGB | GLUT_DEPTH );
     
-    glutInitWindowSize(1024,786);
+    glutInitWindowSize(800,600);
     
     glutInitWindowPosition(100, 100);
     glutCreateWindow("Transformation testbed - wireframes");
@@ -275,7 +323,7 @@ int main(int argc, char **argv)
     
     glutKeyboardFunc(myKeyboard);
     glClearColor(1.0f, 1.0f, 1.0f,0.0f); // background is white
-    glViewport(0, 0, 1024, 786);
+    glViewport(0, 0, 800, 600);
     
     kazifa.init();
     glutMainLoop();
@@ -355,6 +403,13 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
             init_kazifa =1;
             break;
             
+        // zoom
+        case 's':
+            s +=1;
+            break;
+        case 'S':
+            s -=1;
+            break;
             
         // power
         case '+':
