@@ -5,27 +5,29 @@
 #define PI 3.14159265
 
 float camera_x = 0.0;
-float camera_y = -90.0;
+float camera_y = 0.0;
 float camera_z = 0.0;
 
 float tx = 0.0;
 float ty = 0.0;
-float tz = 12.0;
+float tz = 1.0;
 float s = 170.0;
 
 float rotbody=0.0f;
 float rotholder=0.0f;
 float canonfor = 4.0f;
 
+bool kazifa_view = false;
+
 struct Kazifa{
     float x;
     float y;
     float z;
-
+    
     float anglx;
     float angly;
     float anglz;
-     
+    
     float resist = 5/1;
     void init(float xx, float yy, float zz,
               float ax, float ay, float az){
@@ -38,9 +40,9 @@ struct Kazifa{
     }
     void init(){
         x = 0.0;
-        y = 5.5;
+        y = 7.5;
         z = canonfor-1;
-        anglx = 0;
+        anglx = rotholder;
         angly = rotbody;
         anglz = 0;
     }
@@ -58,15 +60,16 @@ struct Kazifa{
         
         y +=1*sin(PI*angly/180);
         angly-=resist;
-        
+        x -= sin(PI*rotholder/180);
         z +=1*cos(PI*rotbody/180);;
     }
     void undo_update(){
-
+        
         z -=1*cos(PI*rotbody/180);;
+        x += sin(PI*rotholder/180);
         angly+=resist;
         y -=1*sin(PI*angly/180);
-
+        
     }
     void print(){
         printf("x:%f, y:%f, z:%f\n", x,y,z);
@@ -91,8 +94,10 @@ struct Hole{
         
         glPushMatrix(); // start disk
         glTranslated(x,y, z);
+        glRotatef(90, 1.0, 0, 0);
         glColor3f(0, 0, 0);
-        gluDisk(qobj, r-0.75, r, 20, 4);
+//        gluDisk(qobj, r-0.75, r, 20, 4);
+        gluCylinder(qobj, r, r, 0.5, 20,4);
         glPopMatrix(); // end disk
     }
     
@@ -161,7 +166,7 @@ void drawCanon(void){
     glutWireCube(15);
     
     glPushMatrix(); //canon
-    glTranslated(0, 0, canonfor );
+    glTranslated(0, 2, canonfor);
     glScalef(1.5, 1.5, 1.5);
     
     glPushMatrix(); //base
@@ -254,18 +259,29 @@ void displayWire(void)
     glMatrixMode(GL_PROJECTION); // set the view volume shape
     glLoadIdentity();
     gluPerspective(s, //Field of view
-                   640/480.0, //Aspect ratio
-                   0.1, // Z near
+                   800.0/600.0, //Aspect ratio
+                   0.9, // Z near
                    100.0);// Z far
     
     double factor = 1;
     glOrtho(-10/factor, 10/factor, -10/factor, 10/factor, 0.1, 500);
     glMatrixMode(GL_MODELVIEW); // position and aim the camera
+    
     glEnable(GL_DEPTH_TEST);
     glLoadIdentity();
-    gluLookAt(tx, ty, tz, // eye position
-              0.0, 0.0, 0.0, // center
+    if (kazifa_view)
+        gluLookAt( kazifa.x, kazifa.y, kazifa.z+1.0, // eye
+              kazifa.x, kazifa.y+0.5, kazifa.z, // center
+//              0.0,0.0,0.0,
               0.0, 1.0, 0.0); // normal
+    else
+        gluLookAt( 0.0,0.0,5.0, // eye
+//              kazifa.x, kazifa.y, kazifa.z, // center
+              0.0,0.0,0.0,
+              0.0, 1.0, 0.0); // normal
+    
+    
+        
     
     
     glRotatef(camera_x, 1.0, 0.0, .0);
@@ -278,13 +294,14 @@ void displayWire(void)
     drawCanon();
     kazifa.draw();
     
-    h1.init(0,5,15,2);
+    h1.init(0,0,25,2);
     h1.draw();
     kazifa.print();
     printf("%d\n", h1.isIn(kazifa));
     
     glPopMatrix(); // end everything
-    glutSwapBuffers();
+//    glutSwapBuffers();
+    glFlush();
 }
 //<<<<<<<<<<<<<<<<<<<<<< main >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 int main(int argc, char **argv)
@@ -314,7 +331,7 @@ int main(int argc, char **argv)
     glEnable(GL_LIGHT0);
     glEnable(GL_LIGHT1);
     glEnable(GL_LIGHT2);
-//    glEnable(GL_LIGHTING);
+    //    glEnable(GL_LIGHTING);
     
     glEnable(GL_DEPTH_TEST);
     //    glDepthMask(GL_TRUE);
@@ -332,7 +349,7 @@ int main(int argc, char **argv)
 void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
     int init_kazifa = 0;
     switch(thekey){
-        // camera
+            // camera
         case 'x':
             camera_x += 5;
             camera_x= (int)camera_x %360;
@@ -359,8 +376,21 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
             camera_z -= 5;
             camera_z= (int)camera_z %360;
             break;
+        
+        case 'K':
+            if (kazifa_view){
+                kazifa_view = false;
+                s = 130;
+                
+            }else{
+                kazifa_view = true;
+                camera_x=0;
+                camera_y=0;
+                camera_z=0;
+                s=50;
+            }
             
-        // play/rewind
+            // play/rewind
         case 'p':
             kazifa.update();
             break;
@@ -369,7 +399,7 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
             break;
             
             
-        // control
+            // control
         case 'r':
             if (rotbody < 90)
                 rotbody += 1;
@@ -389,7 +419,7 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
             break;
             
         case 'E':
-            if (rotholder > 0)
+            if (rotholder > -45)
                 rotholder -= 1;
             init_kazifa =1;
             break;
@@ -403,7 +433,7 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
             init_kazifa =1;
             break;
             
-        // zoom
+            // zoom
         case 's':
             s +=1;
             break;
@@ -411,7 +441,7 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
             s -=1;
             break;
             
-        // power
+            // power
         case '+':
             kazifa.resist -= 0.5;
             printf("kazifa.resist %f\n", kazifa.resist);
@@ -420,12 +450,12 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
             kazifa.resist += 0.5;
             printf("kazifa.resist %f\n", kazifa.resist);
             break;
-        // init
+            // init
         case 'I':
             kazifa.init();
             printf("kazifa.angly %f\n", kazifa.angly);
             break;
-        
+            
     }
     if (init_kazifa)
         kazifa.init();
