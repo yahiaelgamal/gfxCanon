@@ -56,7 +56,7 @@ struct Kazifa{
         glPopMatrix(); // end sphere
     }
     void update(){
-        cout << "rotbody " << angly << "  sin " << sin(angly) << endl;
+        //cout << "rotbody " << angly << "  sin " << sin(angly) << endl;
         
         y +=1*sin(PI*angly/180);
         angly-=resist;
@@ -296,8 +296,8 @@ void displayWire(void)
     
     h1.init(0,0,25,2);
     h1.draw();
-    kazifa.print();
-    printf("%d\n", h1.isIn(kazifa));
+    //kazifa.print();
+    printf("hole 1 In?%d\n", h1.isIn(kazifa));
     
     glPopMatrix(); // end everything
 //    glutSwapBuffers();
@@ -353,7 +353,6 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
         case 'x':
             camera_x += 5;
             camera_x= (int)camera_x %360;
-            std::cout << camera_x << std::endl;
             break;
         case 'y':
             camera_y += 5;
@@ -444,16 +443,16 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
             // power
         case '+':
             kazifa.resist -= 0.5;
-            printf("kazifa.resist %f\n", kazifa.resist);
+            //printf("kazifa.resist %f\n", kazifa.resist);
             break;
         case '-':
             kazifa.resist += 0.5;
-            printf("kazifa.resist %f\n", kazifa.resist);
+            //printf("kazifa.resist %f\n", kazifa.resist);
             break;
             // init
         case 'I':
             kazifa.init();
-            printf("kazifa.angly %f\n", kazifa.angly);
+            //printf("kazifa.angly %f\n", kazifa.angly);
             break;
             
     }
