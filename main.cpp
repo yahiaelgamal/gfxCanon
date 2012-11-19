@@ -3,6 +3,8 @@
 #include <math.h>
 
 #define PI 3.14159265
+#define MAX_RESIST 3.5
+#define MIN_RESIST 0.5
 
 float camera_x = 0.0;
 float camera_y = 0.0;
@@ -11,7 +13,7 @@ float camera_z = 0.0;
 float tx = 0.0;
 float ty = 0.0;
 float tz = 1.0;
-float s = 170.0;
+float s = 100.0;
 
 float rotbody=0.0f;
 float rotholder=0.0f;
@@ -28,7 +30,7 @@ struct Kazifa{
     float angly;
     float anglz;
     
-    float resist = 5/1;
+    float resist = 3.3;
     void init(float xx, float yy, float zz,
               float ax, float ay, float az){
         x = xx;
@@ -62,6 +64,8 @@ struct Kazifa{
         angly-=resist;
         x -= sin(PI*rotholder/180);
         z +=1*cos(PI*rotbody/180);;
+        if (y < -1.5)
+            init();
     }
     void undo_update(){
         
@@ -73,6 +77,16 @@ struct Kazifa{
     }
     void print(){
         printf("x:%f, y:%f, z:%f\n", x,y,z);
+    }
+    
+    void print_power(){
+        
+       printf("%f",  (MAX_RESIST-resist));
+        std::cout << "power:";
+        for (float i = MAX_RESIST-resist; i > 0; i-=0.1){
+            std::cout << "|";
+        }
+        std::cout << std::endl;
     }
 }kazifa;
 
@@ -315,23 +329,15 @@ int main(int argc, char **argv)
     glutCreateWindow("Transformation testbed - wireframes");
     glutDisplayFunc(displayWire);
     
-    GLfloat light_diffuse[] = {0.8, 0.8, 0.8};
+    GLfloat light_diffuse[] = {1.0, 1.0, 1.0};
     float light_position[] = {10.0, 10.5, 10.5, 0.0};
-    float light_position2[] = {-10.0, 10.5, -10.5, 0.0};
     
-    float light_position3[] = {0.0, -10.5, -10.5, 0.0};
     
-    glLightfv(GL_LIGHT0, GL_AMBIENT_AND_DIFFUSE, light_diffuse);
-    glLightfv(GL_LIGHT1, GL_SPECULAR, light_diffuse);
-    glLightfv(GL_LIGHT2, GL_AMBIENT, light_diffuse);
+    glLightfv(GL_LIGHT0, GL_AMBIENT, light_diffuse);
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-    glLightfv(GL_LIGHT1, GL_POSITION, light_position2);
-    glLightfv(GL_LIGHT2, GL_POSITION, light_position3);
     
     glEnable(GL_LIGHT0);
-    glEnable(GL_LIGHT1);
-    glEnable(GL_LIGHT2);
-    //    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
     
     glEnable(GL_DEPTH_TEST);
     //    glDepthMask(GL_TRUE);
@@ -442,13 +448,16 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
             
             // power
         case '+':
-            kazifa.resist -= 0.5;
-            //printf("kazifa.resist %f\n", kazifa.resist);
+            if(kazifa.resist > MIN_RESIST)
+                kazifa.resist -= 0.1;
+            kazifa.print_power();
             break;
         case '-':
-            kazifa.resist += 0.5;
-            //printf("kazifa.resist %f\n", kazifa.resist);
+            if(kazifa.resist < MAX_RESIST)
+                kazifa.resist += 0.1;
+            kazifa.print_power();
             break;
+            
             // init
         case 'I':
             kazifa.init();
