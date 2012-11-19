@@ -5,6 +5,7 @@
 #define PI 3.14159265
 #define MAX_RESIST 3.5
 #define MIN_RESIST 0.5
+#define MAX_HOLE_RAD 6
 
 float camera_x = 0.0;
 float camera_y = 0.0;
@@ -13,13 +14,15 @@ float camera_z = 0.0;
 float tx = 0.0;
 float ty = 0.0;
 float tz = 1.0;
-float s = 100.0;
+float s = 130.0;
 
 float rotbody=0.0f;
 float rotholder=0.0f;
 float canonfor = 4.0f;
 
 bool kazifa_view = false;
+
+float score = 0.0;
 
 struct Kazifa{
     float x;
@@ -65,7 +68,7 @@ struct Kazifa{
         x -= sin(PI*rotholder/180);
         z +=1*cos(PI*rotbody/180);;
         
-        if (y < -2.0)
+        if (y < -3.0)
             init();
     }
     void undo_update(){
@@ -82,7 +85,7 @@ struct Kazifa{
     
     void print_power(){
         
-       printf("%f",  (MAX_RESIST-resist));
+       //printf("%f",  (MAX_RESIST-resist));
         std::cout << "power:";
         for (float i = MAX_RESIST-resist; i > 0; i-=0.1){
             std::cout << "|";
@@ -94,15 +97,20 @@ struct Kazifa{
 
 struct Hole{
     float x,y,z,r;
+    bool hit;
     
     void init(float mx, float my, float mz, float rad){
         x = mx;
         y = my;
         z = mz;
         r = rad;
+        hit = false;
     }
     
     void draw(){
+        if(hit)
+            return;
+        
         GLUquadricObj * qobj;
         qobj = gluNewQuadric();
         gluQuadricDrawStyle(qobj,GLU_FILL);
@@ -117,12 +125,21 @@ struct Hole{
     }
     
     bool isIn(Kazifa kaz){
+        if (hit)
+            return false;
+        
         if (kaz.x < x + r && kaz.x > x - r &&
             kaz.y < y + 0.5 && kaz.y > y - 0.5 &&
-            kaz.z < z + r && kaz.z > z - r)
+            kaz.z < z + r && kaz.z > z - r){
+            hit = true;
+            score += MAX_HOLE_RAD - r;
+            printf("HIT %f\n Score is %f",r, score);
             return true;
-        else
+        }
+        else{
+        //    printf("NOT HIT %f\n",r);
             return false;
+        }
     }
     
     void print(){
@@ -285,19 +302,13 @@ void displayWire(void)
     glEnable(GL_DEPTH_TEST);
     glLoadIdentity();
     if (kazifa_view)
-        gluLookAt( kazifa.x, kazifa.y, kazifa.z+1.0, // eye
+        gluLookAt(kazifa.x, kazifa.y, kazifa.z+1.0, // eye
               kazifa.x, kazifa.y+0.5, kazifa.z, // center
-//              0.0,0.0,0.0,
               0.0, 1.0, 0.0); // normal
     else
-        gluLookAt( 0.0,0.0,5.0, // eye
-//              kazifa.x, kazifa.y, kazifa.z, // center
+        gluLookAt(0.0,0.0,5.0, // eye
               0.0,0.0,0.0,
               0.0, 1.0, 0.0); // normal
-    
-    
-        
-    
     
     glRotatef(camera_x, 1.0, 0.0, .0);
     glRotatef(camera_y, 0.0, 1.0, .0);
@@ -309,14 +320,29 @@ void displayWire(void)
     drawCanon();
     kazifa.draw();
     
-    h1.init(0,0,25,2);
-    h1.draw();
-    //kazifa.print();
-    printf("hole 1 In?%d\n", h1.isIn(kazifa));
+//    h1.init(0,0,25,2);
+//    h1.draw();
+   //kazifa.print();
+//    printf("hole 1 In?%d\n", h1.isIn(kazifa));
+    for (int i = 0; i < 5; i++){
+        holes[i].isIn(kazifa);
+    }
+    
+    for(int i = 0; i < 5; i++){
+        holes[i].draw();
+    }
     
     glPopMatrix(); // end everything
 //    glutSwapBuffers();
     glFlush();
+}
+
+void init_holes(void){
+    holes[0].init(5,0,45,2);
+    holes[1].init(-8,0,30,4);
+    holes[2].init(13,0,55,5);
+    holes[3].init(-4,0,23,3);
+    holes[4].init(5,0,39,1);
 }
 //<<<<<<<<<<<<<<<<<<<<<< main >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 int main(int argc, char **argv)
@@ -349,6 +375,7 @@ int main(int argc, char **argv)
     glClearColor(1.0f, 1.0f, 1.0f,0.0f); // background is white
     glViewport(0, 0, 800, 600);
     
+    init_holes();
     kazifa.init();
     glutMainLoop();
 }
@@ -393,7 +420,7 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
                 camera_x=0;
                 camera_y=0;
                 camera_z=0;
-                s=50;
+                s=80;
             }
             
             // play/rewind
