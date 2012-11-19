@@ -64,7 +64,8 @@ struct Kazifa{
         angly-=resist;
         x -= sin(PI*rotholder/180);
         z +=1*cos(PI*rotbody/180);;
-        if (y < -1.5)
+        
+        if (y < -2.0)
             init();
     }
     void undo_update(){
@@ -117,8 +118,8 @@ struct Hole{
     
     bool isIn(Kazifa kaz){
         if (kaz.x < x + r && kaz.x > x - r &&
-            kaz.y < y + r && kaz.y > y - r &&
-            kaz.z < z + 1 && kaz.z > z - 1)
+            kaz.y < y + 0.5 && kaz.y > y - 0.5 &&
+            kaz.z < z + r && kaz.z > z - r)
             return true;
         else
             return false;
