@@ -425,6 +425,7 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
                 camera_z=0;
                 s=80;
             }
+            break;
             
             // play/rewind
         case 'p':
