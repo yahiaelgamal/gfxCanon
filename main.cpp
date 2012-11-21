@@ -6,7 +6,9 @@
 #define MAX_RESIST 3.5
 #define MIN_RESIST 0.5
 #define MAX_HOLE_RAD 6
+#define MAX_SCORE 15.0
 
+void anim(void);
 float camera_x = 0.0;
 float camera_y = 0.0;
 float camera_z = 0.0;
@@ -33,7 +35,10 @@ struct Kazifa{
     float angly;
     float anglz;
     
-    float resist = 3.3;
+    float resist;
+    
+    bool moving;
+    
     void init(float xx, float yy, float zz,
               float ax, float ay, float az){
         x = xx;
@@ -50,6 +55,10 @@ struct Kazifa{
         anglx = rotholder;
         angly = rotbody;
         anglz = 0;
+        if (resist == 0)
+            resist = 3.3;
+        
+        moving = false;
     }
     void draw(){
         glPushMatrix(); // start sphere
@@ -61,8 +70,7 @@ struct Kazifa{
         glPopMatrix(); // end sphere
     }
     void update(){
-        //cout << "rotbody " << angly << "  sin " << sin(angly) << endl;
-        
+       // cout << "rotbody " << angly << "  sin " << sin(angly) << endl;
         y +=1*sin(PI*angly/180);
         angly-=resist;
         x -= sin(PI*rotholder/180);
@@ -84,7 +92,6 @@ struct Kazifa{
     }
     
     void print_power(){
-        
        //printf("%f",  (MAX_RESIST-resist));
         std::cout << "power:";
         for (float i = MAX_RESIST-resist; i > 0; i-=0.1){
@@ -133,7 +140,7 @@ struct Hole{
             kaz.z < z + r && kaz.z > z - r){
             hit = true;
             score += MAX_HOLE_RAD - r;
-            printf("HIT %f\n Score is %f",r, score);
+            printf("Score is %.0f%%\n", score/MAX_SCORE*100);
             return true;
         }
         else{
@@ -195,7 +202,7 @@ void drawWheels(void){
 void drawCanon(void){
     glColor3f(0.5, 0.5, 0.0);
     glPushMatrix(); // wire cube start
-    glutWireCube(15);
+    glutWireCube(50);
     
     glPushMatrix(); //canon
     glTranslated(0, 2, canonfor);
@@ -320,10 +327,6 @@ void displayWire(void)
     drawCanon();
     kazifa.draw();
     
-//    h1.init(0,0,25,2);
-//    h1.draw();
-   //kazifa.print();
-//    printf("hole 1 In?%d\n", h1.isIn(kazifa));
     for (int i = 0; i < 5; i++){
         holes[i].isIn(kazifa);
     }
@@ -333,7 +336,6 @@ void displayWire(void)
     }
     
     glPopMatrix(); // end everything
-//    glutSwapBuffers();
     glFlush();
 }
 
@@ -364,7 +366,7 @@ int main(int argc, char **argv)
     glLightfv(GL_LIGHT0, GL_POSITION, light_position);
     
     glEnable(GL_LIGHT0);
-    glEnable(GL_LIGHTING);
+    //glEnable(GL_LIGHTING);
     
     glEnable(GL_DEPTH_TEST);
     //    glDepthMask(GL_TRUE);
@@ -373,6 +375,7 @@ int main(int argc, char **argv)
     
     glutKeyboardFunc(myKeyboard);
     glClearColor(1.0f, 1.0f, 1.0f,0.0f); // background is white
+	glutIdleFunc(anim);
     glViewport(0, 0, 800, 600);
     
     init_holes();
@@ -425,10 +428,12 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
             
             // play/rewind
         case 'p':
-            kazifa.update();
+            kazifa.moving = true;
+//            kazifa.update();
             break;
         case 'P':
-            kazifa.undo_update();
+            kazifa.moving = false;
+//            kazifa.undo_update();
             break;
             
             
@@ -495,6 +500,14 @@ void myKeyboard(unsigned char thekey,int mouseX,int mouseY){
     }
     if (init_kazifa)
         kazifa.init();
-    glutPostRedisplay();
+//    glutPostRedisplay();
     
+}
+
+void anim(){
+    if (kazifa.moving){
+        kazifa.update();
+    }
+    for (int i = 0; i < 3e6; i++){}
+    glutPostRedisplay();
 }
